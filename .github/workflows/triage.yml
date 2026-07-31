@@ -12,6 +12,10 @@ jobs:
     welcome:
         runs-on: ubuntu-latest
         steps:
+            - name: Checkout responde template
+              uses: actions/checkout@v6
+              with:
+                sparse-checkout: .github/ISSUE_RESPONSES
             - name: Comment on new issue
               uses: actions/github-script@v9
               # 1if: github.event.issue.author_association != 'OWNER'

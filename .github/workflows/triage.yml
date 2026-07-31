@@ -17,26 +17,28 @@ jobs:
               if: github.event.issue.author_association != 'OWNER'
               with:
                 script: |
+                    const fs = require('fs')
+
                     const {owner, repo, number } = context.issue
                     const author = context.payload.issue.user.login
-                    
-                    console.log(`Comentando en ${owner}/${repo}#${number} (author: ${author})`)
+                    const repoUrl = `${context.serverUrl}/${owner}/${repo}`
+
+                    console.log('cwd = ', process.cwd())
+                    console.log('contenido =', fs.readdirSync('.'))
+
+                    const template = fs.readFileSync('.github/ISSUE_RESPONSES/welcome.md', 'utf8')
+
+                    const body = template
+                        .replaceAll('{{author}}', autor)
+                        .replaceAll('{{repoUrl}}', repoUrl)
+                        .replaceAll('{{runNumber}}', String(context.runNumber))
+                        .replaceAll('{{runUrl}}', `${repoUrl}/actions/runs/${context.runId}`)
 
                     await github.rest.issues.createComment({
                         owner,
                         repo,
                         issue_number: number,
-                        body: [
-                            `👋 Gracias por abrir esta issue, @${author}!`,
-                            '',
-                            'Un mantenedor la revisará pronto. Mientras tanto, verifica que hayas incluido:',
-                            '',
-                            '- Pasos para reproducir',
-                            '- Comportamiento esperado vs. observado',
-                            '- Versión y sistema operativo',
-                            '',
-                            `<sub>🤖 Automatizado — run [#${context.runNumber}](${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId})</sub>`
-                        ].join('\n')
+                        body
                     })
             
             

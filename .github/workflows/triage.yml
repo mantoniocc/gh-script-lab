@@ -33,7 +33,7 @@ jobs:
                     const template = fs.readFileSync('.github/ISSUE_RESPONSES/welcome.md', 'utf8')
 
                     const body = template
-                        .replaceAll('{{author}}', autor)
+                        .replaceAll('{{author}}', author)
                         .replaceAll('{{repoUrl}}', repoUrl)
                         .replaceAll('{{runNumber}}', String(context.runNumber))
                         .replaceAll('{{runUrl}}', `${repoUrl}/actions/runs/${context.runId}`)

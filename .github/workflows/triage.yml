@@ -23,3 +23,12 @@ jobs:
                     console.log('context.issue  =', JSON.stringify(context.issue))
                     console.log('eventName      =', context.eventName)
                     console.log('actor          =', context.actor)
+            
+            - name: Write a summary
+              uses: actions/github-script@v9
+              with:
+                script: |
+                    await core.summary
+                        .addHeading('Fase 0 completada')
+                        .addRow(`Evento: \`${context.eventName}\` - disparado por @${context.actor}`)
+                        .write()

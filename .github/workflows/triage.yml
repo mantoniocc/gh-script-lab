@@ -11,7 +11,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Dump the workflow context
-              uses: actions/github-scripts@v9
+              uses: actions/github-script@v9
               with:
                 script: |
                     core.startGroup('context (serializado)')

@@ -29,6 +29,6 @@ jobs:
               with:
                 script: |
                     await core.summary
-                        .addHeading('Fase 0 completada')
-                        .addRow(`Evento: \`${context.eventName}\` - disparado por @${context.actor}`)
-                        .write()
+                    .addHeading('Fase 0 completada ✅')
+                    .addRaw(`Evento: \`${context.eventName}\` — disparado por @${context.actor}`)
+                    .write()

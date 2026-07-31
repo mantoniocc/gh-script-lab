@@ -1,0 +1,25 @@
+name: Issue Triage Bot
+
+on:
+    workflow_dispatch: 
+
+permissions: 
+    contents: read
+
+jobs:
+    explore-context:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Dump the workflow context
+              uses: actions/github-scripts@v9
+              with:
+                script: |
+                    core.startGroup('context (serializado)')
+                    console.log(JSON.stringify(context, null, 2))
+                    core.endGroup()
+
+                    console.log('--- getters calculados ---')
+                    console.log('context.repo   =', JSON.stringify(context.repo))
+                    console.log('context.issue  =', JSON.stringify(context.issue))
+                    console.log('eventName      =', context.eventName)
+                    console.log('actor          =', context.actor)

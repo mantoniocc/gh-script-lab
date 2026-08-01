@@ -18,7 +18,7 @@ jobs:
                 sparse-checkout: .github/ISSUE_RESPONSES
             - name: Comment on new issue
               uses: actions/github-script@v9
-              # 1if: github.event.issue.author_association != 'OWNER'
+              if: github.event.issue.author_association != 'OWNER'
               with:
                 script: |
                     const fs = require('fs')
@@ -44,5 +44,43 @@ jobs:
                         issue_number: number,
                         body
                     })
+
+            - name: Auto-label by content
+              uses: actions/github-script@v9
+              env:
+                ISSUE_TITLE: ${{github.event.issue.title}}
+                ISSUE_BODY: ${{github.event.issue.body}}
+              with:
+                script: |
+                    const title = process.env.ISSUE_TITLE || ''
+                    const body = process.env.ISSUE_BODY || ''
+                    const text = `${title}\n${body}`.toLowerCase()
+
+                     const rules = [
+                        { label: 'bug',         patterns: ['error', 'crash', 'crashea', 'falla', 'no funciona', 'bug'] },
+                        { label: 'enhancement', patterns: ['feature', 'sugerencia', 'seria bueno', 'propuesta', 'mejora'] },
+                        { label: 'question',    patterns: ['como puedo', 'duda', 'pregunta', '?'] },
+                        { label: 'documentation', patterns: ['docs', 'documentacion', 'readme', 'typo'] }
+                    ]
+                    
+                    const matched = rules
+                        .filter(r => r.patterns.some(p => text.includes(p)))
+                        .map(r => r.label)
+
+                    const labels = matched.length ? matched : ['need-triage']
+
+                    core.info(`Texto analizado: ${text.length} caracteres`)
+                    core.info(`Labels a aplicar: ${labels.join(', ')}`)
+
+                    await github.rest.issues.addLabels({
+                        ...context.repo,
+                        issue_number: context.issue.number,
+                        labels
+                    })
+
+                    await core.summary
+                        .addHeading('Triage automatico', 3)
+                        .addList(labels)
+                        .write()
             
             

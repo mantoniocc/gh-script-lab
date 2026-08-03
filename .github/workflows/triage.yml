@@ -56,7 +56,7 @@ jobs:
                 ISSUE_BODY: ${{github.event.issue.body}}
               with:
                 script: |
-                    const classify = require('.github/scrips/classify.js')
+                    const classify = require('.github/scripts/classify.js')
                     return await classify({github, context, core})
 
             - name: Report triage result

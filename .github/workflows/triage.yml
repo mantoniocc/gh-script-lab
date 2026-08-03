@@ -87,7 +87,7 @@ jobs:
                 PRIORITY_OPTIONS: ${{ vars.PRIORITY_OPTIONS }}
                 PRIORITY: ${{fromJSON(steps.classify.outputs.result).priority}}
               with:
-                github-token: ${{secrets.PROJECT_TOKEN}}
+                github-token: ${{secrets.PROJECTS_TOKEN}}
                 script: |
                     const addToProject = require('.github/scripts/add-to-project.js')
                     return await addToProject({github, context, core})

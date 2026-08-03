@@ -63,11 +63,9 @@ jobs:
                         { label: 'documentation', patterns: ['docs', 'documentacion', 'readme', 'typo'] }
                     ]
                     
-                    const matched = rules
-                        .filter(r => r.patterns.some(p => text.includes(p)))
-                        .map(r => r.label)
+                    const matched = rules.find(r => r.patterns.some(p => text.includes(p)))
 
-                    const labels = matched.length ? matched : ['need-triage']
+                    const labels = matched ? [matched.label] : ['need-triage']
 
                     core.info(`Texto analizado: ${text.length} caracteres`)
                     core.info(`Labels a aplicar: ${labels.join(', ')}`)

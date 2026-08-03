@@ -78,5 +78,18 @@ jobs:
                             ['Issue', `#${context.issue.number}`]
                         ])
                         .write()
+
+            - name: Add to project board
+              uses: actions/github-script@v9
+              env:
+                PROJECT_ID: ${{vars.PROJECT_ID}}
+                PRIORITY_FIELD_ID: ${{ vars.PRIORITY_FIELD_ID }}
+                PRIORITY_OPTIONS: ${{ vars.PRIORITY_OPTIONS }}
+                PRIORITY: ${{fromJSON(steps.classify.outputs.result).priority}}
+              with:
+                github-token: ${{secrets.PROJECT_TOKEN}}
+                script: |
+                    const addToProject = require('.github/scripts/add-to-project.js')
+                    return await addToProject({github, context, core})
             
             

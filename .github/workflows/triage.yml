@@ -80,6 +80,10 @@ jobs:
                         .write()
 
             - name: Add to project board
+              if: >-
+                steps.classify.outcome == 'success' &&
+                steps.classify.outputs.result != '' &&
+                fromJSON(steps.classify.outputs.result).priority != 'P4'
               uses: actions/github-script@v9
               env:
                 PROJECT_ID: ${{vars.PROJECT_ID}}

@@ -29,7 +29,7 @@ jobs:
               if: github.event.issue.author_association != 'OWNER'
               with:
                 retries: 3
-                retry-exempt-status-code: 400, 401, 403, 404, 422
+                retry-exempt-status-codes: 400, 401, 403, 404, 422
                 script: |
                     const fs = require('fs')
 
@@ -74,7 +74,7 @@ jobs:
                 ISSUE_BODY: ${{github.event.issue.body}}
               with:
                 retries: 3
-                retry-exempt-status-code: 400, 401, 403, 404, 422
+                retry-exempt-status-codes: 400, 401, 403, 404, 422
                 script: |
                     const classify = require('.github/scripts/classify.js')
                     return await classify({github, context, core})
@@ -85,7 +85,7 @@ jobs:
                 TRIAGE_RESULT: ${{steps.classify.outputs.result}}
               with:
                 retries: 3
-                retry-exempt-status-code: 400, 401, 403, 404, 422
+                retry-exempt-status-codes: 400, 401, 403, 404, 422
                 script: |
                     const {label, priority} = JSON.parse(process.env.TRIAGE_RESULT)
 
@@ -114,7 +114,7 @@ jobs:
                 PRIORITY: ${{fromJSON(steps.classify.outputs.result).priority}}
               with:
                 retries: 3
-                retry-exempt-status-code: 400, 401, 403, 404, 422
+                retry-exempt-status-codes: 400, 401, 403, 404, 422
                 github-token: ${{secrets.PROJECTS_TOKEN}}
                 script: |
                     const addToProject = require('.github/scripts/add-to-project.js')

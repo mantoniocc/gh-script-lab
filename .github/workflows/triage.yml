@@ -4,25 +4,32 @@ on:
     issues: 
         types: [opened]
 
-permissions: 
-    contents: read
-    issues: write
+permissions: {}
+
+concurrency: 
+    group: triage-${{github.event.issue.number}}
+    cancel-in-progress: false
 
 jobs:
     welcome:
+        permissions: 
+            contents: read
+            issues: write
         runs-on: ubuntu-latest
         steps:
             - name: Checkout responde template
-              uses: actions/checkout@v6
+              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 #v6
               with:
                 sparse-checkout: |
                     .github/ISSUE_RESPONSES
                     .github/scripts
                 
             - name: Comment on new issue
-              uses: actions/github-script@v9
+              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 #v9
               if: github.event.issue.author_association != 'OWNER'
               with:
+                retries: 3
+                retry-exempt-status-code: 400, 401, 403, 404, 422
                 script: |
                     const fs = require('fs')
 
@@ -30,10 +37,21 @@ jobs:
                     const author = context.payload.issue.user.login
                     const repoUrl = `${context.serverUrl}/${owner}/${repo}`
 
-                    console.log('cwd = ', process.cwd())
-                    console.log('contenido =', fs.readdirSync('.'))
+                    const opts = github.rest.issues.listForRepo.endpoint.merge({
+                        owner,
+                        repo,
+                        creator: author,
+                        state: 'all'
+                    })
+                    
+                    const previous = await github.paginate(opts)
+                    const isFirstTimer = previous.length <=1
 
-                    const template = fs.readFileSync('.github/ISSUE_RESPONSES/welcome.md', 'utf8')
+                    core.info(`${author} tiene ${previous.length} issue(s). Primerizo: ${isFirstTimer}`)
+
+                    const file = isFirstTimer ? 'welcome-first.md' : 'welcome.md'
+
+                    const template = fs.readFileSync('.github/ISSUE_RESPONSES/${file}', 'utf8')
 
                     const body = template
                         .replaceAll('{{author}}', author)
@@ -50,11 +68,13 @@ jobs:
 
             - name: Auto-label by content
               id: classify
-              uses: actions/github-script@v9
+              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 #v9 
               env:
                 ISSUE_TITLE: ${{github.event.issue.title}}
                 ISSUE_BODY: ${{github.event.issue.body}}
               with:
+                retries: 3
+                retry-exempt-status-code: 400, 401, 403, 404, 422
                 script: |
                     const classify = require('.github/scripts/classify.js')
                     return await classify({github, context, core})
@@ -64,6 +84,8 @@ jobs:
               env:
                 TRIAGE_RESULT: ${{steps.classify.outputs.result}}
               with:
+                retries: 3
+                retry-exempt-status-code: 400, 401, 403, 404, 422
                 script: |
                     const {label, priority} = JSON.parse(process.env.TRIAGE_RESULT)
 
@@ -84,13 +106,15 @@ jobs:
                 steps.classify.outcome == 'success' &&
                 steps.classify.outputs.result != '' &&
                 fromJSON(steps.classify.outputs.result).priority != 'P4'
-              uses: actions/github-script@v9
+              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 #v9 
               env:
                 PROJECT_ID: ${{vars.PROJECT_ID}}
                 PRIORITY_FIELD_ID: ${{ vars.PRIORITY_FIELD_ID }}
                 PRIORITY_OPTIONS: ${{ vars.PRIORITY_OPTIONS }}
                 PRIORITY: ${{fromJSON(steps.classify.outputs.result).priority}}
               with:
+                retries: 3
+                retry-exempt-status-code: 400, 401, 403, 404, 422
                 github-token: ${{secrets.PROJECTS_TOKEN}}
                 script: |
                     const addToProject = require('.github/scripts/add-to-project.js')
